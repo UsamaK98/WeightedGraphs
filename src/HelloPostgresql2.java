@@ -64,7 +64,7 @@ public class HelloPostgresql2
         for (String node : graph.keySet()) {
             List<String> path = new ArrayList<>();
             path.add(node);
-            getPathToLeaf(graph, path, pathWeights);
+            getPathToLeaf(graph, path, pathWeights, input);
         }
 
         for (String leafNode : pathWeights.keySet()) {
@@ -81,29 +81,34 @@ public class HelloPostgresql2
         //db.close();
         }
 
-    private static void getPathToLeaf(Map<String, List<Edge>> graph, List<String> path, Map<String, Integer> pathWeights) {
+    private static void getPathToLeaf(Map<String, List<Edge>> graph, List<String> path, Map<String, Integer> pathWeights, String root) {
         String currentNode = path.get(path.size() - 1);
         if (!graph.containsKey(currentNode)) {
-            int weight = 1;
-            for (int i = 0; i < path.size() - 1; i++) {
-                List<Edge> edges = graph.get(path.get(i));
-                for (Edge edge : edges) {
-                    if (edge.to.equals(path.get(i + 1))) {
-                        weight *= edge.weight;
-                        break;
+            if (path.get(0).equals(root)) {
+                int weight = 1;
+                for (int i = 0; i < path.size() - 1; i++) {
+                    List<Edge> edges = graph.get(path.get(i));
+                    for (Edge edge : edges) {
+                        if (edge.to.equals(path.get(i + 1))) {
+                            weight *= edge.weight;
+                            break;
+                        }
                     }
                 }
+                String leafNode = path.get(path.size() - 1);
+                pathWeights.put(leafNode, pathWeights.getOrDefault(leafNode, 0) + weight);
             }
-            String leafNode = path.get(path.size() - 1);
-            pathWeights.put(leafNode, pathWeights.getOrDefault(leafNode, 0) + weight);
         } else {
             for (Edge edge : graph.get(currentNode)) {
                 path.add(edge.to);
-                getPathToLeaf(graph, path, pathWeights);
+                getPathToLeaf(graph, path, pathWeights, root);
                 path.remove(path.size() - 1);
             }
         }
     }
+
+
+
 
     static class Edge {
         String from;
